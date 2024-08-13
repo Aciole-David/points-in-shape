@@ -29,7 +29,8 @@ a=read.delim2('metadata.txt',header = T)
 
 str(a)
 
-
+# # # # # # # # # # # # # # 
+# optional filters
 #filter region
 a <- filter(a, Country == 'columnname' )
 
@@ -41,6 +42,7 @@ a <- a %>%
 #filter has info:
 a <- a %>%
   filter(a$info == 1)
+# # # # # # # # # # # # # # 
 
 ##REMOVE EMPTY AND NA IN COORDINATES COLUMNS
 a <- a[(!is.na(a$Latitude)), ]
@@ -57,28 +59,24 @@ a$index<-as.numeric(rownames(a))
 custom.sf <- st_as_sf(a, coords = c("Longitude","Latitude"))
 st_crs(custom.sf) <- 4269
 
-ggplot() +
-  theme_bw()+
-  geom_sf(data = shp2, color='red', fill='lightgrey')+
-  geom_sf(data = custom.sf, aes(color=State.Province), fill='lightgrey')
 
 
 shp3 <- st_read('shape3.shp')
 st_crs(shp3) <- 4269
+
+# # # # # # # # # # # # # # 
+# optional rename regions
 #rename some regions to color as the same
 shp3$legenda_1<-gsub(shp3$legenda_1, pattern = ' Place1', replacement = '')
 shp3$legenda_1<-gsub(shp3$legenda_1, pattern = ' Place2', replacement = '')
 shp3$legenda_1<-gsub(shp3$legenda_1, pattern = ' Place3', replacement = '')
-
 shp3$legenda_1<-gsub(shp3$legenda_1, pattern = ' Place4', replacement = '')
 shp3$legenda_1<-gsub(shp3$legenda_1, pattern = ' Place5', replacement = '')
+# # # # # # # # # # # # # # 
 
+#legenda_1 is the column with regions
 regions<-data.frame(region.name=unique(shp3$legenda_1))
 
-ggplot() +
-  theme_bw()+
-  geom_sf(data = shp2, color='red', fill='lightgrey')+
-  geom_sf(data = custom.sf, color='red', fill='lightgrey')+
 
 # For each aspect region loop ####
 #get region
@@ -117,36 +115,6 @@ try(c$aspect<-now.region)
 write.table(x = c, 
             file = paste0('info-',now.region,'.txt'),
             sep = '\t', quote = F, row.names = F)
-
-species.found<-length(unique(c$Catalog.Number.Code))
-
-pdf(file = paste0('aspect-',now.region,'.pdf'),
-    paper = 'a4r', width = 10, height = 8)
-p<-ggplot() +
-  theme_bw()+
-  geom_sf(data = ma, color='lightgrey', fill='lightgrey')+
-  geom_sf(data = shp3.now, color='cyan', fill='cyan')+
-  geom_point(data=c, color='black',cex=.7,
-               aes(x=Longitude,y=Latitude))+
-  ggtitle(paste0(now.region,'; ',species.found,' info found'))
-
-print(p)
-
-dev.off()
-}
-
-pdf(file = paste0('compare-shapes.pdf'),
-    paper = 'a4r', width = 10, height = 8)
-ggplot() +
-  theme_bw()+
-  geom_sf(data = ma, color='lightgrey', fill='lightgrey')+
-  geom_sf(data = shp3, color='cyan', fill='cyan',
-          )+
-  # geom_point(data=c, color='black',cex=.7,
-  #              aes(x=decimalLongitude,y=decimalLatitude))+
-  ggtitle('shape versus aspects')
-dev.off()
-
 
 
 
